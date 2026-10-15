@@ -34,10 +34,22 @@ class NotificacionesServicio(notificaciones_pb2_grpc.NotificacionesServicer):
     def Suscribirse(self, request, context):
         # STREAMING: entrega VARIAS cajas con yield
         # TODO
+        # Si no se encuentra al destinatario en la lista de AVISOS, se regresa el error NOT FOUND
+        destinatario = request.destinatario
+        if destinatario not in AVISOS:
+            context.abort(grpc.StatusCode.NOT_FOUND, "El destinatario no tiene ningún aviso")
         # Si el destinatario no tiene avisos: context.abort(grpc.StatusCode.NOT_FOUND, ...)
         # Si tiene: por cada aviso, espera 1 s y haz yield de un notificaciones_pb2.Aviso.
-        context.abort(grpc.StatusCode.UNIMPLEMENTED, "Falta implementar Suscribirse")
+        #Por cada aviso de la lista se va a 'congelar' el código por un segundo para simular demora
+        for aviso in AVISOS[destinatario]:
+            time.sleep(1)
+            #Se envía cada uno de los avisos 
+            yield notificaciones_pb2.Aviso(
+            destinatario=destinatario,
+            mensaje=aviso
+        )
 
+        #context.abort(grpc.StatusCode.UNIMPLEMENTED, "Falta implementar Suscribirse")
 
 servidor = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
 notificaciones_pb2_grpc.add_NotificacionesServicer_to_server(NotificacionesServicio(), servidor)
