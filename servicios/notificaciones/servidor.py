@@ -22,9 +22,14 @@ class NotificacionesServicio(notificaciones_pb2_grpc.NotificacionesServicer):
         # UNARIO: regresa UNA caja con return
         # TODO
         # Si request.destinatario o request.mensaje vienen vacíos: context.abort(grpc.StatusCode.INVALID_ARGUMENT, ...)
+        if not request.destinatario or not request.mensaje:
         # Si no: agrega el mensaje a AVISOS[destinatario] (créalo si no existe).
+            context.abort(grpc.StatusCode.INVALID_ARGUMENT, "destinatario y mensaje son obligatorios")
+        AVISOS.setdefault(request.destinatario, []).append(request.mensaje)
+        CONTADOR[0] += 1
         # Regresa una Confirmacion con un folio "AV-1001", "AV-1002"… (usa CONTADOR) y entregado=True.
-        context.abort(grpc.StatusCode.UNIMPLEMENTED, "Falta implementar EnviarAviso")
+        return notificaciones_pb2.Confirmacion(folio=f"AV-{CONTADOR[0]}", entregado=True)
+        # context.abort(grpc.StatusCode.UNIMPLEMENTED, "Falta implementar EnviarAviso")
 
     def Suscribirse(self, request, context):
         # STREAMING: entrega VARIAS cajas con yield
