@@ -9,8 +9,10 @@ import envios_pb2_grpc
 canal = grpc.insecure_channel("localhost:50055")
 stub = envios_pb2_grpc.EnviosStub(canal)
 
-# `CotizarEnvio`: CP `28000`, 2500 g → 13900 centavos, 1 día<br>`Rastrear`: `GUIA-500` (4 estados) o `GUIA-501` (2) |
-# `CotizarEnvio`: CP `280` o peso `0`
+#`CotizarEnvio`: CP `28000`, 2500 g → 13900 centavos, 1 día<br>
+#`Rastrear`: `GUIA-500` (4 estados) o `GUIA-501` (2)
+###Dan error
+#`CotizarEnvio`: CP `280` o peso `0`<br>
 #`Rastrear`: `GUIA-999` |
 
 
@@ -33,8 +35,23 @@ except grpc.RpcError as e:
     print(f"Error: {e.code().name} - {e.details()}")
 
 print("=== Parte 3 · Rastrear (streaming) ===")
+print("Primer rastreo: ")
 # TODO: recorre stub.Rastrear(...) con for e imprime cada caja en cuanto llegue.
 #       Ponlo también dentro de try/except por si el servidor regresa un error.
+try:
+    for r in stub.Rastrear(envios_pb2.GuiaRequest(guia="GUIA-500")):
+        print(f"Llegó: Número de guía: {r.guia} - Estado: {r.estado} - Lugar: {r.lugar}")
+except grpc.RpcError as e:
+    print(f"Error: {e.code().name} - {e.details()}")
+
+print("Segundo rastreo: ")
+try:
+    for r in stub.Rastrear(envios_pb2.GuiaRequest(guia="GUIA-501")):
+        print(f"Llegó: Número de guía: {r.guia} - Estado: {r.estado} - Lugar: {r.lugar}")
+except grpc.RpcError as e:
+    print(f"Error: {e.code().name} - {e.details()}")
+
+print("Tercer rastreo: ")
 try:
     for r in stub.Rastrear(envios_pb2.GuiaRequest(guia="GUIA-999")):
         print(f"Llegó: Número de guía: {r.guia} - Estado: {r.estado} - Lugar: {r.lugar}")
