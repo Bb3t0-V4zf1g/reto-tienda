@@ -34,13 +34,30 @@ try:
 except grpc.RpcError as e:
     print(f"Error: {e.code().name} - {e.details()}")
 
+
+
+
 print("=== Parte 3 · Rastrear (streaming) ===")
-print("Primer rastreo: ")
+print("Primer rastreo con timeout: ")
 # TODO: recorre stub.Rastrear(...) con for e imprime cada caja en cuanto llegue.
 #       Ponlo también dentro de try/except por si el servidor regresa un error.
+print("Rastreo con menor tiempo de espera")
+count = 0
 try:
-    for r in stub.Rastrear(envios_pb2.GuiaRequest(guia="GUIA-500")):
+    for r in stub.Rastrear(envios_pb2.GuiaRequest(guia="GUIA-500"),timeout= 2):
         print(f"Llegó: Número de guía: {r.guia} - Estado: {r.estado} - Lugar: {r.lugar}")
+        count += 1
+except grpc.RpcError as e:
+    print(f"Recibí {count} cajas del rastreo de la guía GUIA-500")
+    print(f"Error: {e.code().name} - {e.details()}")
+
+print ("Rastreo con mayor tiempo de espera")
+count = 0
+try:
+    for r in stub.Rastrear(envios_pb2.GuiaRequest(guia="GUIA-500"),timeout=5):
+        print(f"Llegó: Número de guía: {r.guia} - Estado: {r.estado} - Lugar: {r.lugar}")
+        count += 1
+    print(f"Recibí {count} cajas del rastreo de la guía GUIA-500")
 except grpc.RpcError as e:
     print(f"Error: {e.code().name} - {e.details()}")
 
@@ -53,7 +70,7 @@ except grpc.RpcError as e:
 
 print("Tercer rastreo: ")
 try:
-    for r in stub.Rastrear(envios_pb2.GuiaRequest(guia="GUIA-999")):
+    for r in stub.Rastrear(envios_pb2.GuiaRequest(guia="GUIA-999"), ):
         print(f"Llegó: Número de guía: {r.guia} - Estado: {r.estado} - Lugar: {r.lugar}")
 except grpc.RpcError as e:
     print(f"Error: {e.code().name} - {e.details()}")
